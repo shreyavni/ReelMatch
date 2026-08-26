@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Reel Match — Movie Recommendations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0f0d0c;
+    --surface: #1a1614;
+    --surface-2: #221d1a;
+    --line: #332b26;
+    --gold: #d4a017;
+    --gold-bright: #f0c34a;
+    --curtain: #b33a3a;
+    --text: #f5efe6;
+    --text-muted: #a8998a;
+    --radius: 6px;
+  }
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+  body{
+    margin:0;
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 15% 0%, rgba(212,160,23,0.08), transparent 40%),
+      radial-gradient(circle at 85% 10%, rgba(179,58,58,0.08), transparent 40%);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+  }
+  ::selection{ background: var(--gold); color: #1a1614; }
+
+  /* ---------- Film strip motif ---------- */
+  .filmstrip{
+    height: 14px;
+    background-repeat: repeat-x;
+    background-size: 22px 14px;
+    background-image: repeating-linear-gradient(
+      to right,
+      var(--surface-2) 0px, var(--surface-2) 14px,
+      transparent 14px, transparent 22px
+    );
+    position: relative;
+  }
+  .filmstrip::before{
+    content:"";
+    position:absolute; inset:0;
+    background: repeating-linear-gradient(
+      to right,
+      transparent 0px, transparent 5px,
+      var(--bg) 5px, var(--bg) 9px,
+      transparent 9px, transparent 14px,
+      var(--surface-2) 14px
+    );
+  }
+
+  header{
+    padding: 64px 24px 40px;
+    text-align: center;
+    position: relative;
+  }
+  .eyebrow{
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.3em;
+    font-size: 11px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  h1{
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 9vw, 96px);
+    letter-spacing: 0.04em;
+    margin: 0;
+    line-height: 0.95;
+    background: linear-gradient(180deg, var(--gold-bright), var(--gold) 60%, #8a6a12);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 2px 24px rgba(212,160,23,0.25);
+  }
+  .subhead{
+    color: var(--text-muted);
+    max-width: 520px;
+    margin: 18px auto 0;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* ---------- Ticket-style search ---------- */
+  .search-wrap{
+    max-width: 620px;
+    margin: 40px auto 0;
+    padding: 0 24px;
+    position: relative;
+  }
+  .ticket{
+    display:flex;
+    align-items:center;
+    gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 6px 6px 6px 20px;
+    position: relative;
+  }
+  .ticket::before, .ticket::after{
+    content:"";
+    position:absolute;
+    width: 18px; height: 18px;
+    background: var(--bg);
+    border-radius: 50%;
+    top: 50%; transform: translateY(-50%);
+  }
+  .ticket::before{ left: -9px; }
+  .ticket::after{ right: -9px; }
+  .ticket input{
+    flex:1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-size: 16px;
+    font-family: 'Inter', sans-serif;
+    padding: 14px 0;
+  }
+  .ticket input::placeholder{ color: var(--text-muted); }
+  .ticket button{
+    background: var(--gold);
+    color: #1a1610;
+    border: none;
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 0.08em;
+    font-size: 18px;
+    padding: 14px 26px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+  }
+  .ticket button:hover{ background: var(--gold-bright); }
+  .ticket button:active{ transform: scale(0.97); }
+  .ticket button:disabled{ opacity: 0.5; cursor: not-allowed; }
+
+  .suggestions{
+    position:absolute;
+    top: calc(100% + 8px);
+    left: 24px; right: 24px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    z-index: 20;
+    display: none;
+  }
+  .suggestions.show{ display: block; }
+  .suggestion-item{
+    padding: 12px 18px;
+    font-size: 14px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--line);
+    display:flex; justify-content: space-between;
+    color: var(--text);
+  }
+  .suggestion-item:last-child{ border-bottom: none; }
+  .suggestion-item:hover{ background: var(--surface-2); color: var(--gold-bright); }
+  .suggestion-item span{ color: var(--text-muted); font-family:'IBM Plex Mono', monospace; font-size:12px; }
+
+  .hint{
+    text-align:center;
+    color: var(--text-muted);
+    font-size: 12px;
+    margin-top: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* ---------- Results ---------- */
+  main{
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 56px 24px 100px;
+  }
+  .status{
+    text-align:center;
+    color: var(--text-muted);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    padding: 40px 0;
+    display:none;
+  }
+  .status.show{ display:block; }
+  .status.error{ color: var(--curtain); }
+
+  .now-showing{
+    display:flex;
+    align-items:baseline;
+    gap: 14px;
+    margin-bottom: 28px;
+    display:none;
+  }
+  .now-showing.show{ display:flex; }
+  .now-showing .label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+  .now-showing h2{
+    font-family:'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 0.02em;
+    margin:0;
+    color: var(--text);
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 26px;
+  }
+  .card{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    display:flex;
+    flex-direction: column;
+    transition: transform 0.18s ease, border-color 0.18s ease;
+    cursor: default;
+  }
+  .card:hover{
+    transform: translateY(-4px);
+    border-color: var(--gold);
+  }
+  .poster-wrap{
+    position: relative;
+    aspect-ratio: 2 / 3;
+    background: var(--surface-2);
+    overflow: hidden;
+  }
+  .poster-wrap img{
+    width:100%; height:100%; object-fit: cover;
+    display:block;
+  }
+  .poster-fallback{
+    width:100%; height:100%;
+    display:flex; align-items:center; justify-content:center;
+    color: var(--text-muted);
+    font-family:'Bebas Neue', sans-serif;
+    font-size: 20px;
+    text-align:center;
+    padding: 20px;
+  }
+  .rating-badge{
+    position:absolute;
+    top: 10px; left: 10px;
+    background: rgba(15,13,12,0.85);
+    border: 1px solid var(--gold);
+    color: var(--gold-bright);
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 4px;
+    backdrop-filter: blur(2px);
+  }
+  .match-badge{
+    position:absolute;
+    top: 10px; right: 10px;
+    background: rgba(179,58,58,0.9);
+    color: #fff;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+  .card-body{
+    padding: 16px 16px 18px;
+    display:flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+  }
+  .card-title{
+    font-family:'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.01em;
+    line-height: 1.1;
+    color: var(--text);
+  }
+  .card-meta{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .card-overview{
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--text-muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex: 1;
+  }
+
+  footer{
+    text-align:center;
+    padding: 30px 24px 50px;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Content-based recommendations</div>
+  <h1>REEL MATCH</h1>
+  <p class="subhead">Tell us one film you love. We'll dim the lights and line up ten more, matched by story, genre, cast, and tone.</p>
+
+  <div class="search-wrap">
+    <div class="ticket">
+      <input id="movieInput" type="text" placeholder="Type a movie title, e.g. Inception" autocomplete="off" />
+      <button id="searchBtn">FIND</button>
+    </div>
+    <div id="suggestions" class="suggestions"></div>
+  </div>
+  <div class="hint">Press Enter or click FIND — results load in a few seconds</div>
+</header>
+
+<div class="filmstrip"></div>
+
+<main>
+  <div id="status" class="status"></div>
+  <div id="nowShowing" class="now-showing">
+    <span class="label">Because you liked</span>
+    <h2 id="matchedTitle"></h2>
+  </div>
+  <div id="grid" class="grid"></div>
+</main>
+
+<footer>Posters, ratings, and descriptions are served directly from the trained dataset — no external calls at request time.</footer>
+
+<script>
+  const API_BASE = ""; // same-origin, Flask serves both frontend and API
+  const input = document.getElementById("movieInput");
+  const btn = document.getElementById("searchBtn");
+  const suggestionsBox = document.getElementById("suggestions");
+  const statusEl = document.getElementById("status");
+  const gridEl = document.getElementById("grid");
+  const nowShowing = document.getElementById("nowShowing");
+  const matchedTitleEl = document.getElementById("matchedTitle");
+
+  let debounceTimer = null;
+
+  input.addEventListener("input", () => {
+    clearTimeout(debounceTimer);
+    const q = input.value.trim();
+    if (!q) { suggestionsBox.classList.remove("show"); return; }
+    debounceTimer = setTimeout(() => fetchSuggestions(q), 220);
+  });
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      suggestionsBox.classList.remove("show");
+      runSearch(input.value.trim());
+    }
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!suggestionsBox.contains(e.target) && e.target !== input) {
+      suggestionsBox.classList.remove("show");
+    }
+  });
+
+  btn.addEventListener("click", () => runSearch(input.value.trim()));
+
+  async function fetchSuggestions(q) {
+    try {
+      const res = await fetch(`${API_BASE}/movies?q=${encodeURIComponent(q)}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      renderSuggestions(data.results || []);
+    } catch (err) {
+      // fail silently for autocomplete — not critical
+    }
+  }
+
+  function renderSuggestions(results) {
+    if (!results.length) { suggestionsBox.classList.remove("show"); return; }
+    suggestionsBox.innerHTML = results.map(r =>
+      `<div class="suggestion-item" data-title="${escapeHtml(r.title)}">
+         <span>${escapeHtml(r.title)}</span>
+         <span>${r.release_year || ""}</span>
+       </div>`
+    ).join("");
+    suggestionsBox.classList.add("show");
+
+    suggestionsBox.querySelectorAll(".suggestion-item").forEach(el => {
+      el.addEventListener("click", () => {
+        input.value = el.dataset.title;
+        suggestionsBox.classList.remove("show");
+        runSearch(el.dataset.title);
+      });
+    });
+  }
+
+  async function runSearch(movie) {
+    if (!movie) {
+      showStatus("Type a movie title first.", true);
+      return;
+    }
+    gridEl.innerHTML = "";
+    nowShowing.classList.remove("show");
+    showStatus("Rolling the film reel...");
+    btn.disabled = true;
+
+    try {
+      const res = await fetch(`${API_BASE}/recommend`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ movie })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showStatus(data.error || "Something went wrong.", true);
+        return;
+      }
+
+      hideStatus();
+      matchedTitleEl.textContent = data.matched_title;
+      nowShowing.classList.add("show");
+      renderGrid(data.recommendations || []);
+    } catch (err) {
+      showStatus("Couldn't reach the server. Please try again.", true);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  function renderGrid(movies) {
+    if (!movies.length) {
+      showStatus("No similar titles found.", true);
+      return;
+    }
+    gridEl.innerHTML = movies.map(m => `
+      <div class="card">
+        <div class="poster-wrap">
+          ${m.poster_url
+            ? `<img src="${m.poster_url}" alt="${escapeHtml(m.title)} poster" loading="lazy" onerror="this.parentElement.innerHTML='<div class=poster-fallback>${escapeHtml(m.title)}</div>'" />`
+            : `<div class="poster-fallback">${escapeHtml(m.title)}</div>`}
+          ${m.rating != null ? `<div class="rating-badge">★ ${m.rating.toFixed(1)}</div>` : ""}
+          ${m.similarity != null ? `<div class="match-badge">${Math.round(m.similarity * 100)}% match</div>` : ""}
+        </div>
+        <div class="card-body">
+          <div class="card-title">${escapeHtml(m.title)}</div>
+          <div class="card-meta">${m.release_year || "—"} · ${escapeHtml((m.genres || "").split(",").slice(0,2).join(" / ") || "—")}</div>
+          <div class="card-overview">${escapeHtml(m.overview || "No description available.")}</div>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function showStatus(msg, isError=false) {
+    statusEl.textContent = msg;
+    statusEl.classList.add("show");
+    statusEl.classList.toggle("error", isError);
+  }
+  function hideStatus() {
+    statusEl.classList.remove("show");
+  }
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+</script>
+</body>
+</html>

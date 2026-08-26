@@ -1,0 +1,62 @@
+{
+  "info": {
+    "name": "Reel Match - Movie Recommender API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:5000" }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/health"
+      }
+    },
+    {
+      "name": "Search Movies (autocomplete)",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/movies?q=incep"
+      }
+    },
+    {
+      "name": "Recommend - Valid",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"movie\": \"Inception\"}"
+        },
+        "url": "{{base_url}}/recommend"
+      }
+    },
+    {
+      "name": "Recommend - Missing field (error)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{}" },
+        "url": "{{base_url}}/recommend"
+      }
+    },
+    {
+      "name": "Recommend - Movie not found (error)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\"movie\": \"asdkjaskldjaklsjd\"}" },
+        "url": "{{base_url}}/recommend"
+      }
+    },
+    {
+      "name": "Unknown route (404)",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/doesnotexist"
+      }
+    }
+  ]
+}
