@@ -1,7 +1,3 @@
-**Name:** Avni Shukla
-**Regd. No.:** INBT021871
-**Course ID:** ACIINB18
-
 # Reel Match — AI Movie Recommendation Web App
 
 A full-stack content-based movie recommendation system. Enter a movie you like,
@@ -108,7 +104,7 @@ code — the server never crashes or shows a raw 500 page. See
 
 ## 6. Deployment
 
-### Option A — Render (recommended, free tier)
+### Render
 
 1. Push this project to a GitHub repository (make sure `dataset_extract/`
    and the raw `.csv` are **not** included — see `.gitignore`).
@@ -125,78 +121,7 @@ code — the server never crashes or shows a raw 500 page. See
    wakes up; subsequent requests respond in well under a second (tested
    locally at ~50 ms for `/recommend`).
 
-### Option B — Railway
-
-1. Connect your GitHub repo at [railway.app](https://railway.app).
-2. Set the root directory to `backend`.
-3. Railway auto-detects the `Procfile` (`gunicorn app:app --bind 0.0.0.0:$PORT`).
-4. Deploy — Railway injects `PORT` automatically.
-
-### Option C — PythonAnywhere
-
-1. Upload the `backend/` folder (or clone via git from a "Bash console").
-2. Create a virtualenv and `pip install -r requirements.txt`.
-3. In the **Web** tab, create a new web app (Manual configuration, Flask).
-4. Point the WSGI file's `app` import at `backend/app.py`'s `app` object,
-   and set the working directory to the `backend/` folder.
-5. Reload the web app.
-
-### Environment variables & secrets
-
-This project doesn't require any API keys or secrets (posters/ratings come
-from the pre-trained dataset, not a live API), so there's nothing sensitive
-to configure. If you extend it with a live TMDB API key or database
-credentials later, store them as environment variables on the hosting
-platform's dashboard — never commit them to GitHub.
-
-## 7. Documentation & screenshots
-
-| Doc | Contents |
-|---|---|
-| `docs/DATASET.md` | Dataset source, size, columns used, and cleaning/filtering steps |
-| `docs/MODEL_EXPLANATION.md` | Plain-language explanation of the TF-IDF + Nearest Neighbors recommender |
-| `docs/API_TESTING.md` | Postman-style test log for every endpoint, including error cases |
-| `docs/Reel_Match.postman_collection.json` | Importable Postman collection |
-| `docs/screenshots/` | Screenshots of the working app (desktop, mobile, and API test log) |
-
-> **Note on posters in the screenshots:** they were captured in a sandboxed
-> build environment that can't reach `image.tmdb.org`, so posters show as
-> text-fallback cards there. The `poster_url` field is present and correct
-> in every API response (verified in `docs/API_TESTING.md`) and will render
-> real poster images as soon as the app is deployed with normal internet
-> access.
-
-## 8. Final deliverables checklist
-
-Per the evaluation criteria: live application link works from any device,
-a non-technical user can use it without instructions, the model returns
-sensible/relevant results, output is never random/broken/meaningless, bad
-input is handled cleanly, the backend doesn't crash under normal use, the
-repo runs from a clean clone, and this README covers setup, usage, testing,
-and deployment end to end.
-
-| Deliverable | Status |
-|---|---|
-| Live deployed application link | ⬜ Deploy using Section 6, then add the URL here |
-| GitHub repository link | ⬜ Push this folder to GitHub, then add the URL here |
-| Dataset details and source | ✅ `docs/DATASET.md` |
-| Trained model / loading instructions | ✅ `backend/model_artifacts/` + Section 4 |
-| Frontend source code | ✅ `backend/static/index.html` |
-| Flask backend source code | ✅ `backend/app.py` |
-| `requirements.txt` | ✅ `backend/requirements.txt` |
-| README file | ✅ this file |
-| Postman testing screenshots/documentation | ✅ `docs/API_TESTING.md` + `docs/screenshots/04_api_test_log.jpg` |
-| Screenshots of the working application | ✅ `docs/screenshots/` |
-| Explanation of the model and how it works | ✅ `docs/MODEL_EXPLANATION.md` |
-
-The two boxes left unchecked need a one-time action from you: create a
-GitHub repo named `Avni_INBT021871_iNeuBytes` and push this code (with
-Task 1 and Task 2 in their own folders in the same repo, per the
-submission instructions), then deploy it (Render/Railway/PythonAnywhere,
-Section 6) and paste both links at the top of this README before
-submitting.
-
-## 9. Performance notes
+## 7. Performance notes
 
 - `/recommend` responds in **~50 ms** once the server is warm (well inside
   the 3–5 second target).
