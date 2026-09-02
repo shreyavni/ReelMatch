@@ -1,7 +1,7 @@
-# Reel Match — AI Movie Recommendation Web App
+# 🎬 Reel Match — AI Movie Recommendation Web App
 
 A full-stack content-based movie recommendation system. Enter a movie you like,
-and the app returns 10 similar titles — each with **poster, rating, genres,
+and the app returns 10 similar titles, each with **poster, rating, genres,
 and description** — pulled straight from the trained dataset (no external API
 calls needed at request time, so it stays fast and doesn't depend on any
 third-party rate limits).
